@@ -3,6 +3,9 @@
   "description": "A cli tool to render vega-lite visualizations to svg",
   "version": "1.0.0",
   "main": "index.js",
+  "files": [
+    "index.js"
+  ],
   "bin": {
     "svega": "./index.js"
   },
