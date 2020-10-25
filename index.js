@@ -92,15 +92,16 @@ async function toSvg(vlSpec, data) {
 async function main() {
   // parse args
   const args = process.argv.slice(2);
+  if (args.some((a) => a === "--help" || a === "-h")) {
+    usageExit();
+  }
 
   // find the graph spec (it should end in .json)
-  const specPath = resolve(
-    __dirname,
-    args.find((a) => a.endsWith(".json"))
-  );
-  if (!specPath) {
+  const specArg = args.find((a) => a.endsWith(".json"));
+  if (!specArg) {
     usageExit("can't find spec");
   }
+  const specPath = resolve(__dirname, specArg);
   const format =
     process.argv
       .filter((a) => a.startsWith("--format="))
