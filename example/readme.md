@@ -3,7 +3,7 @@ Install dev dependencies to pull in [vega-datasets](https://github.com/vega/vega
 Display from csv data:
 
 ```sh
-cat node_modules/vega-datasets/data/seattle-weather.csv | ./index.js example/wx.vl.json | isvg
+cat node_modules/vega-datasets/data/seattle-weather.csv | svega example/wx.vl.json | isvg
 ```
 
 Display from ndjson data:
@@ -11,7 +11,7 @@ Display from ndjson data:
 ```sh
 cat node_modules/vega-datasets/data/movies.json \
 | jq -c .[] \
-| ./index.js example.movies.vl.json --format=ndjson \
+| svega example.movies.vl.json --format=ndjson \
 | isvg
 ```
 
@@ -21,7 +21,7 @@ Display from json data:
 
 ```sh
 cat node_modules/vega-datasets/data/movies.json \
-| ./index.js example/movies.vl.json \
+| svega example/movies.vl.json \
 | isvg
 ```
 

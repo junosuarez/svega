@@ -17,7 +17,7 @@ yarn add --global @junosuarez/svega
 ## Usage
 
 ```
-svega [opts] <spec.vl.json> < data.json
+svega [opts] <spec.vl.json> < data.json > out.svg
 
    stdin must be data, stdout will be svg or empty
 
@@ -36,3 +36,10 @@ The examples use `isvg`, the following shell alias, using [kitty terminal](https
 ```sh
 alias isvg='rsvg-convert --zoom=2 | kitty icat --align=left'
 ```
+
+## Alternatives
+
+There is an official [vega-cli](https://github.com/vega/vega/tree/master/packages/vega-cli) package that includes two tools that may suit your needs:
+
+- vg2svg
+- vl2svg

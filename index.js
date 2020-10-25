@@ -35,7 +35,7 @@ function usageExit(hint) {
 }
 
 function crash(msg) {
-  console.error(msg);
+  console.error("SVEGA:", msg);
   process.exit(1);
 }
 
@@ -65,7 +65,7 @@ const parsers = {
     return await toList(stream);
   },
   async csv(raw) {
-    return parseCsv(rawData, { header: true }).data;
+    return parseCsv(raw, { header: true }).data;
   },
 };
 
@@ -101,7 +101,8 @@ async function main() {
   if (!specArg) {
     usageExit("can't find spec");
   }
-  const specPath = resolve(__dirname, specArg);
+  const specPath = resolve(process.cwd(), specArg);
+
   const format =
     process.argv
       .filter((a) => a.startsWith("--format="))
