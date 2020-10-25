@@ -7,7 +7,7 @@ const parseCsv = require("papaparse").parse;
 const ndjson = require("ndjson");
 const { Readable } = require("stream");
 
-const PATCHED_DATA_NAME = "svega";
+let primaryDataSourceName = null;
 
 async function toList(stream) {
   const chunks = [];
@@ -29,7 +29,7 @@ function usageExit(hint) {
   console.error(`   stdin must be data, stdout will be svg or empty`);
   console.error();
   console.error(`   OPTIONS:`);
-  console.error(`     --format=[auto],json,ndjson,csv`);
+  console.error(`     --format=[auto],json,ndjson,csv,textRows`);
 
   process.exit(1);
 }
@@ -40,8 +40,8 @@ function crash(msg) {
 }
 
 function loadSpec(specPath) {
-  if (!specPath.endsWith(".vl.json")) {
-    usageExit("last argument must be a .vl.json file");
+  if (!/\.v[gl]\.json$/.test(specPath)) {
+    usageExit("last argument must be a .vl.json or .vg.json file");
   }
   return JSON.parse(readFileSync(specPath));
 }
@@ -67,6 +67,9 @@ const parsers = {
   async csv(raw) {
     return parseCsv(raw, { header: true }).data;
   },
+  async textrows(raw) {
+    return raw.split("\n");
+  },
 };
 
 async function loadData(format) {
@@ -80,10 +83,13 @@ async function loadData(format) {
 
 async function toSvg(vlSpec, data) {
   // compile vega-lite to full vega spec, create view, and add data
-  const spec = vegaLite.compile(vlSpec).spec;
+  const spec =
+    vlSpec.$schema === "https://vega.github.io/schema/vega-lite/v4.json"
+      ? vegaLite.compile(vlSpec).spec
+      : vlSpec;
   const view = new vega.View(vega.parse(spec));
 
-  view.insert(PATCHED_DATA_NAME, data);
+  view.insert(primaryDataSourceName, data);
 
   // render to svg
   return await view.toSVG();
@@ -114,12 +120,24 @@ async function main() {
     loadData(format),
   ]);
 
-  // TODO: support non-lite vega specs as well
-  if (vlSpec.$schema !== "https://vega.github.io/schema/vega-lite/v4.json") {
-    usageExit("must pass a vega-lite spec");
+  if (
+    vlSpec.$schema !== "https://vega.github.io/schema/vega-lite/v4.json" &&
+    vlSpec.$schema !== "https://vega.github.io/schema/vega/v5.json"
+  ) {
+    usageExit("must pass a vega or vega-lite spec");
   }
-  // patch spec to use named data source
-  vlSpec.data = { name: PATCHED_DATA_NAME };
+  // find first data source name
+  let ds = vlSpec.data;
+  if (Array.isArray(vlSpec.data)) {
+    ds = vlSpec.data[0];
+  }
+  delete ds.url;
+  if (ds.name) {
+    primaryDataSourceName = ds.name;
+  } else {
+    primaryDataSourceName = "svega";
+    ds.name = "svega";
+  }
 
   // render svg to stdout
   console.log(await toSvg(vlSpec, data));
